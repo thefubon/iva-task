@@ -1,0 +1,24 @@
+---
+description: Payload CMS — коллекции, конфиг, типы
+globs: apps/cms/**/*.{ts,tsx,js}
+alwaysApply: false
+---
+
+# Payload CMS
+
+Новая коллекция: `apps/cms/src/collections/Name.ts` → добавить в `collections` в `payload.config.ts`.
+
+Глобал: `apps/cms/src/globals/`. Кастомное поле: `apps/cms/src/fields/`. Access: `apps/cms/src/access/`.
+
+После схемы:
+
+```bash
+pnpm generate:types
+pnpm generate:importmap
+```
+
+`packages/shared/src/payload-types.ts` — только генератор.
+
+Admin UI Payload не переписывать ради «красоты», если хватает config. Медиа — коллекция `media`, файлы локально в `apps/cms/media` (gitignore).
+
+Локали: `ru` (default) и `en`. Seed админа не дублировать вручную в скриптах, если пользователь уже в дампе `backup/mongo`.

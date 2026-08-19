@@ -1,0 +1,33 @@
+---
+description: FSD-слои и импорты фронтенда Next.js
+globs: apps/web/src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# FSD — apps/web
+
+```
+src/
+  app/           # маршруты, layout, assets/css, providers
+  widgets/       # крупные блоки страницы (header, footer)
+  features/      # пользовательские сценарии
+  entities/      # бизнес-сущности + их UI
+  shared/ui      # только UI Kit и примитивы
+  shared/lib     # cn, icons, hooks, i18n
+  shared/api     # клиенты CMS/API
+  shared/config  # меню, константы
+  proxy.ts       # locale rewrite
+```
+
+Слайс фичи/виджета: `ui/`, `lib/`, `model/`, публичный `index.ts`.
+
+```tsx
+// ✅
+import { Button } from '@/shared/ui/button'
+import { fetchPage } from '@/shared/api/pages'
+
+// ❌ shared не импортирует features/widgets
+// ❌ features/a не импортирует features/b напрямую — вынеси в entities/shared
+```
+
+Страницы — в `app/[locale]/...`. Логику страницы не писать в `app/` толстым компонентом: собрать из widgets/features.

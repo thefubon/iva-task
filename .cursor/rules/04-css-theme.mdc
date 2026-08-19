@@ -1,0 +1,18 @@
+---
+description: CSS-тема IVA 360 — два файла, без фрагментов
+globs: apps/web/src/app/assets/css/**/*.css
+alwaysApply: false
+---
+
+# CSS
+
+Ровно два файла в `apps/web/src/app/assets/css/`:
+
+1. `globals.css` — `@import tailwindcss`, `tw-animate-css`, `shadcn/tailwind.css`, `./iva360-theme.css`, шрифты, `@plugin`, `@source`.
+2. `iva360-theme.css` — все дизайн-токены oklch. Не копировать токены в globals.
+
+Запрещено: `_base.css`, `_theme.css`, `_utilities.css`, третий файл темы.
+
+Layout импортирует только `./assets/css/globals.css`.
+
+Новый компонент не создаёт свой CSS-модуль для токенов — только Tailwind + существующие утилиты (`bg-primary`, `text-meetings-primary`, …).

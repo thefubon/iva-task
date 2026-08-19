@@ -1,0 +1,20 @@
+---
+description: Карта monorepo — куда класть код и пакеты
+alwaysApply: true
+---
+
+# Monorepo IVA 360 Demo
+
+Три пакета. Не создавать четвёртый (`packages/ui` запрещён — UI Kit живёт в FSD `shared/ui`).
+
+| Пакет | Путь | Сюда ставить |
+| --- | --- | --- |
+| `@iva360/web` | `apps/web` | Next.js, FSD, UI Kit, Tailwind |
+| `@iva360/cms` | `apps/cms` | Payload: collections, globals, hooks |
+| `@iva360/shared` | `packages/shared` | env, i18n, zod, `payload-types.ts` |
+
+npm-зависимости: только в `package.json` того пакета, который их импортирует. В корне — turbo/eslint/prettier.
+
+Алиас `@/*` = `apps/web/src/*` или `apps/cms/src/*` (внутри своего приложения). Общее: `@iva360/shared`.
+
+Документация для агента: `AGENTS.md`. UI Kit: https://uikit-iva360-react.vercel.app/installation

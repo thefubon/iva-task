@@ -1,0 +1,27 @@
+---
+description: Запреты и обязательные пути IVA 360 UI Kit
+alwaysApply: true
+---
+
+# IVA 360 UI Kit
+
+Источник истины: https://uikit-iva360-react.vercel.app/ и https://uikit-iva360-react.vercel.app/installation
+
+## Обязательно
+
+- Компоненты только через `pnpm dlx shadcn@latest add @iva360/<name>` из `apps/web`.
+- Импорт: `import { Button } from '@/shared/ui/button'`.
+- Иконки: `@/shared/lib/icons` или `HugeiconsIcon` + `@hugeicons/core-free-icons`.
+- Полиморфный корневой элемент Base UI: prop `render`, не `asChild`.
+- CSS: ровно два файла — `globals.css` (вход) + `iva360-theme.css` (токены).
+
+## Запрещено
+
+- Удалять oklch-токены и CSS-переменные.
+- Удалять Tailwind-классы (`hover`, `focus`, `disabled`, тёмная тема).
+- Менять вложенность compound-компонентов (Dialog, Sheet, Sidebar, NumberField).
+- Удалять ARIA и `sr-only`.
+- Урезать CVA `variant` / `size`.
+- Менять `data-slot` / `data-*`.
+- Менять множители `--radius-sm` … `--radius-4xl` (можно только `--radius`).
+- Резать тему на фрагменты. Класть UI в `components/ui` или `packages/ui`.

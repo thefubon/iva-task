@@ -1,0 +1,46 @@
+---
+description: Куда устанавливать UI Kit, npm, FSD-слои и CMS
+alwaysApply: true
+---
+
+# Куда что устанавливать
+
+## UI Kit (только из apps/web)
+
+```bash
+cd apps/web
+pnpm dlx shadcn@latest add @iva360/<name>
+```
+
+Registry уже в `apps/web/components.json` (`@iva360` → uikit-iva360-react). Пресет: `base-maia` + Hugeicons. Не `b0`, не lucide.
+
+| Что | Куда (относительно apps/web) |
+| --- | --- |
+| Компонент | `src/shared/ui/<name>/index.tsx` |
+| `cn()` | `src/shared/lib/utils.ts` |
+| Иконки | `src/shared/lib/icons.tsx` |
+| Хуки | `src/shared/lib/hooks/` |
+| Тема | `src/app/assets/css/iva360-theme.css` |
+| Точка входа CSS | `src/app/assets/css/globals.css` |
+
+Запрещено: `src/components/ui`, `packages/ui`, крошить тему на `_base.css` / `_theme.css`.
+
+## FSD (apps/web/src)
+
+| Слой | Путь | Примеры |
+| --- | --- | --- |
+| app | `app/` | layout, `[locale]`, route handlers |
+| pages/виджеты | `widgets/<name>/` | header, footer |
+| фичи | `features/<name>/` | auth, cart |
+| сущности | `entities/<name>/` | cms-media |
+| shared | `shared/{ui,lib,api,config}` | только переиспользуемое |
+
+Импорт вниз по слоям: `app → widgets → features → entities → shared`. Не наоборот.
+
+## Payload (apps/cms/src)
+
+Коллекции → `collections/`. Поля → `fields/`. Глобалы → `globals/`. Хуки → `hooks/`. Зарегистрировать в `payload.config.ts`. Типы: `pnpm generate:types` → `packages/shared/src/payload-types.ts`. Не править `payload-types.ts` руками.
+
+## Seed Mongo + MinIO
+
+Дамп Mongo: `backup/mongo/iva360.archive.gz`. Файлы загрузок: `backup/minio/data`. Обновление: `pnpm db:backup`. Первый запуск: `pnpm setup` или `docker compose up -d` (`mongo-restore` + `minio-init`).
