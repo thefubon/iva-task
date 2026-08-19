@@ -1,0 +1,40 @@
+{
+  "name": "@iva360/cms",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cross-env CMS_ADMIN_ASSET_PREFIX=/admin NODE_OPTIONS=--no-deprecation next dev -p 3333 --hostname localhost",
+    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start -p 3333",
+    "typecheck": "tsc --noEmit",
+    "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint . --config ../../eslint.config.mjs --max-warnings 0",
+    "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_CLI=true payload generate:importmap",
+    "generate:types": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_CLI=true payload generate:types",
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload"
+  },
+  "dependencies": {
+    "@iva360/shared": "workspace:*",
+    "@payloadcms/db-mongodb": "3.84.1",
+    "@payloadcms/next": "3.84.1",
+    "@payloadcms/richtext-lexical": "3.84.1",
+    "@payloadcms/translations": "3.84.1",
+    "@payloadcms/ui": "3.84.1",
+    "cross-env": "^7.0.3",
+    "dotenv": "16.4.7",
+    "graphql": "^16.8.1",
+    "next": "16.2.12",
+    "payload": "3.84.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "sharp": "0.34.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.9",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "eslint": "^9.16.0",
+    "eslint-config-next": "16.2.12",
+    "typescript": "5.7.3"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "name": "iva360",
+  "version": "1.0.0",
+  "private": true,
+  "description": "IVA360 monorepo — web frontend, Payload CMS, shared types",
+  "browserslist": [
+    "chrome >= 111",
+    "firefox >= 111",
+    "safari >= 16.4",
+    "edge >= 111"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "bash scripts/dev.sh",
+    "dev:web": "pnpm --filter @iva360/web dev",
+    "dev:cms": "pnpm --filter @iva360/cms dev",
+    "build": "turbo run build",
+    "build:web": "pnpm --filter @iva360/web build",
+    "build:cms": "pnpm --filter @iva360/cms build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "generate:types": "pnpm --filter @iva360/cms generate:types",
+    "generate:importmap": "pnpm --filter @iva360/cms generate:importmap",
+    "payload": "pnpm --filter @iva360/cms payload",
+    "db:backup": "bash scripts/backup-mongo.sh"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "dotenv": "16.4.7",
+    "eslint": "^9.16.0",
+    "eslint-config-next": "16.2.12",
+    "prettier": "^3.8.3",
+    "turbo": "^2.5.8",
+    "typescript": "5.7.3"
+  },
+  "engines": {
+    "node": "^18.20.2 || >=20.9.0",
+    "pnpm": "^9 || ^10"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "esbuild",
+      "unrs-resolver"
+    ],
+    "overrides": {
+      "mongoose": "^8.22.1"
+    }
+  },
+  "packageManager": "pnpm@10.28.0"
+}

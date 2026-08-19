@@ -1,0 +1,49 @@
+services:
+  # MongoDB как одноузловой replica set (rs0) — обязательно для транзакций Payload.
+  mongo:
+    image: mongo:8.0.21
+    restart: unless-stopped
+    command: ['--replSet', 'rs0', '--bind_ip_all']
+    ports:
+      - '${MONGO_PORT:-27027}:27017'
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  mongo-init:
+    image: mongo:8.0.21
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: 'no'
+    entrypoint:
+      - bash
+      - -c
+      - |
+        mongosh --host mongo:27017 --quiet --eval '
+          try { rs.status().ok }
+          catch (e) {
+            rs.initiate({ _id: "rs0", members: [{ _id: 0, host: "mongo:27017" }] });
+          }'
+
+  # Первый запуск (пустой volume): заливает backup/mongo/iva360.archive.gz.
+  # Если в БД уже есть users — не трогает данные.
+  mongo-restore:
+    image: mongo:8.0.21
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+    restart: 'no'
+    volumes:
+      - ./backup/mongo:/backup:ro
+    entrypoint: ['bash', '/backup/restore.sh']
+
+volumes:
+  mongo_data:
