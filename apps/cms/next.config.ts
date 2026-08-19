@@ -25,6 +25,7 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   poweredByHeader: false,
   reactStrictMode: true,
+  serverExternalPackages: ['@aws-sdk/client-s3'],
   async rewrites() {
     if (!cmsAdminAssetPrefix) {
       return []

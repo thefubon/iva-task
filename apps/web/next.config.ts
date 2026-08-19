@@ -58,6 +58,18 @@ const nextConfig: NextConfig = {
         port: cmsImagePort,
         pathname: '/api/media/file/**',
       },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: process.env.MINIO_API_PORT || '9002',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: process.env.MINIO_API_PORT || '9002',
+        pathname: '/**',
+      },
     ],
   },
   transpilePackages: ['@iva360/shared'],

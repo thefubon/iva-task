@@ -22,13 +22,15 @@
     "generate:types": "pnpm --filter @iva360/cms generate:types",
     "generate:importmap": "pnpm --filter @iva360/cms generate:importmap",
     "payload": "pnpm --filter @iva360/cms payload",
-    "db:backup": "bash scripts/backup-mongo.sh"
+    "setup": "bash scripts/setup.sh",
+    "db:backup": "bash scripts/backup-seed.sh",
+    "db:seed": "node scripts/seed-demo.mjs"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
     "dotenv": "16.4.7",
     "eslint": "^9.16.0",
-    "eslint-config-next": "16.2.12",
+    "eslint-config-next": "16.3.1",
     "prettier": "^3.8.3",
     "turbo": "^2.5.8",
     "typescript": "5.7.3"

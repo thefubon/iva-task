@@ -2,6 +2,8 @@
 
 Чистый **pnpm-monorepo** для тестового задания React-разработчика. В репозитории два приложения и общий пакет: фронтенд на Next.js (FSD + IVA 360 UI Kit) и CMS на Payload 3. Продуктовой логики нет — только каркас, тема и компоненты.
 
+**Правила для ИИ / агента:** полная карта «куда что ставить» — [AGENTS.md](./AGENTS.md). Cursor подхватывает `.cursor/rules/*.mdc` автоматически.
+
 ## Ссылки: IVA 360 UI Kit (React)
 
 Официальный реестр shadcn/ui для продуктов экосистемы IVA 360. Стек: **Base UI**, **Hugeicons**, **Next.js 16**, **React 19**, **Feature-Sliced Design**. Код копируется в проект.
@@ -64,7 +66,7 @@ import { Download } from '@/shared/lib/icons'
 | --- | --- | --- |
 | [Node.js](https://nodejs.org/) | `^18.20.2` или `>=20.9.0` (в demo проверено на 24) | runtime |
 | [pnpm](https://pnpm.io/) | `^9` или `^10` (`packageManager`: **10.28.0**) | monorepo |
-| [Docker](https://docs.docker.com/get-docker/) + Docker Compose | актуальной версии | MongoDB 8.0.21, replica set `rs0` |
+| [Docker](https://docs.docker.com/get-docker/) + Docker Compose | актуальной версии | MongoDB 8.0.21 + MinIO |
 | Git | любая | клон репозитория |
 
 Браузеры (browserslist): Chrome / Firefox / Edge ≥ 111, Safari ≥ 16.4.
@@ -73,10 +75,21 @@ import { Download } from '@/shared/lib/icons'
 
 ## Быстрый старт DEMO
 
+После клона с GitHub достаточно одной команды — она создаст `.env`, поставит зависимости и поднимет Docker с **готовым дампом** (коллекции Payload, глобалы «Главная» / «Шапка», файлы в MinIO).
+
 ```bash
-cp .env.example .env          # PAYLOAD_SECRET уже можно оставить как в примере для локалки
+git clone https://github.com/thefubon/iva-task.git
+cd iva-task
+pnpm setup
+pnpm dev
+```
+
+Эквивалент вручную:
+
+```bash
+cp .env.example .env
 pnpm install
-docker compose up -d          # Mongo на :27027 + seed из backup/mongo
+docker compose up -d          # Mongo :27027 + MinIO :9002 + restore backup/
 pnpm dev                      # CMS :3333 и Web :3033
 ```
 
@@ -85,16 +98,31 @@ pnpm dev                      # CMS :3333 и Web :3033
 | Сайт (Next.js) | http://localhost:3033 |
 | CMS (Payload admin) | http://localhost:3333/admin |
 | CMS через rewrite фронта | http://localhost:3033/admin |
+| MinIO API | http://127.0.0.1:9002 |
+| MinIO console | http://127.0.0.1:9003 |
 
-**Логин CMS:** `admin@iva360.ru` / `admin`
+**Логин CMS:** `admin@iva360.ru` / `admin`  
+**MinIO console:** `minioadmin` / `minioadmin`
 
-При первом `docker compose up` сервис `mongo-restore` заливает `backup/mongo/iva360.archive.gz`. Если коллекция `users` уже не пустая, дамп **не** перезаписывается.
+При первом `docker compose up` / `pnpm setup`:
 
-Mongo слушает **27027**, чтобы не конфликтовать с локальным `iva360-next` на 27017.
+- `mongo-restore` заливает `backup/mongo/iva360.archive.gz` (пользователи, медиа-метаданные, глобалы Header и HomePage), если коллекция `users` пустая
+- `minio-init` заливает файлы из `backup/minio/data` в бакет `iva360-media`, если бакет пустой
 
-Обновить seed после правок в CMS:
+Если volume уже с данными — дамп **не** перезаписывается.
+
+Mongo слушает **27027**, MinIO API **9002** / console **9003**, чтобы не конфликтовать с локальным `iva360-next` (27017 / 9000).
+
+Обновить seed после правок в CMS (Mongo + файлы MinIO):
 
 ```bash
+pnpm db:backup
+```
+
+Перезалить демо-контент в уже запущенную CMS (нужны CMS + MinIO):
+
+```bash
+pnpm db:seed
 pnpm db:backup
 ```
 
@@ -177,6 +205,11 @@ apps/web/src/
 | `CMS_PUBLIC_URL` | `http://localhost:3333` | публичный origin CMS |
 | `WEB_PUBLIC_URL` | `http://localhost:3033` | публичный origin сайта |
 | `PAYLOAD_SERVER_URL` | `http://localhost:3033` | origin админки через rewrite |
+| `S3_BUCKET` | `iva360-media` | бакет MinIO для загрузок CMS |
+| `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | `minioadmin` | креды MinIO |
+| `S3_ENDPOINT` | `http://127.0.0.1:9002` | API MinIO |
+| `S3_REGION` | `us-east-1` | регион S3-совместимого API |
+| `MINIO_API_PORT` / `MINIO_CONSOLE_PORT` | `9002` / `9003` | порты MinIO на хосте |
 
 ---
 
@@ -184,6 +217,7 @@ apps/web/src/
 
 | Команда | Что делает |
 | --- | --- |
+| `pnpm setup` | `.env`, `pnpm install`, Docker + restore дампов |
 | `pnpm dev` | Docker (если нужно) + CMS + Web |
 | `pnpm dev:web` / `pnpm dev:cms` | одно приложение |
 | `pnpm build` / `pnpm build:web` / `pnpm build:cms` | Turbo / Next build |
@@ -191,7 +225,8 @@ apps/web/src/
 | `pnpm lint` | ESLint |
 | `pnpm generate:types` | Payload → `packages/shared/src/payload-types.ts` |
 | `pnpm generate:importmap` | Payload admin import map |
-| `pnpm db:backup` | `mongodump` → `backup/mongo/iva360.archive.gz` |
+| `pnpm db:seed` | демо-контент в уже запущенную CMS |
+| `pnpm db:backup` | Mongo + MinIO → `backup/` |
 
 ---
 
@@ -201,13 +236,13 @@ apps/web/src/
 
 ### Корень (`iva360`)
 
-**devDependencies:** `turbo`, `typescript` 5.7.3, `eslint`, `eslint-config-next` 16.2.12, `prettier`, `cross-env`, `dotenv` 16.4.7.
+**devDependencies:** `turbo`, `typescript` 5.7.3, `eslint`, `eslint-config-next` 16.3.1, `prettier`, `cross-env`, `dotenv` 16.4.7.
 
 ### `@iva360/web` — фронтенд
 
 | Пакет | Роль |
 | --- | --- |
-| `next` **16.2.12** | App Router, SSR |
+| `next` **16.3.1** | App Router, SSR |
 | `react` / `react-dom` **19.2.8** | UI |
 | `@base-ui/react` | headless-примитивы UI Kit |
 | `@hugeicons/react`, `@hugeicons/core-free-icons` | иконки |
@@ -228,7 +263,7 @@ apps/web/src/
 | `payload` **3.84.1** | CMS |
 | `@payloadcms/next`, `@payloadcms/db-mongodb`, `@payloadcms/richtext-lexical` | Next + Mongo + Lexical |
 | `@payloadcms/ui`, `@payloadcms/translations` | админка, i18n (ru) |
-| `next` 16.2.12, `react` 19.2.8 | тот же runtime, что у web |
+| `next` 16.3.1, `react` 19.2.8 | тот же runtime, что у web |
 | `graphql` | GraphQL API Payload |
 | `sharp` | обработка изображений |
 | `dotenv` | env |

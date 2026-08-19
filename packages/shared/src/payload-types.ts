@@ -70,7 +70,6 @@ export interface Config {
     users: User;
     media: Media;
     'payload-kv': PayloadKv;
-    'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
@@ -79,7 +78,6 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
-    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
@@ -87,8 +85,14 @@ export interface Config {
     defaultIDType: string;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('ru' | 'en') | ('ru' | 'en')[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    homePage: HomePage;
+    header: Header;
+  };
+  globalsSelect: {
+    homePage: HomePageSelect<false> | HomePageSelect<true>;
+    header: HeaderSelect<false> | HeaderSelect<true>;
+  };
   locale: 'ru' | 'en';
   widgets: {
     collections: CollectionsWidget;
@@ -149,6 +153,9 @@ export interface User {
  */
 export interface Media {
   id: string;
+  /**
+   * Краткое описание изображения для доступности.
+   */
   alt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -178,29 +185,6 @@ export interface PayloadKv {
     | number
     | boolean
     | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-locked-documents".
- */
-export interface PayloadLockedDocument {
-  id: string;
-  document?:
-    | ({
-        relationTo: 'users';
-        value: string | User;
-      } | null)
-    | ({
-        relationTo: 'media';
-        value: string | Media;
-      } | null);
-  globalSlug?: string | null;
-  user: {
-    relationTo: 'users';
-    value: string | User;
-  };
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -287,17 +271,6 @@ export interface PayloadKvSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-locked-documents_select".
- */
-export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
-  document?: T;
-  globalSlug?: T;
-  user?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-preferences_select".
  */
 export interface PayloadPreferencesSelect<T extends boolean = true> {
@@ -316,6 +289,351 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homePage".
+ */
+export interface HomePage {
+  id: string;
+  /**
+   * Резервный заголовок для метаданных и H1, если блок Hero не задан.
+   */
+  title?: string | null;
+  /**
+   * Если включено — заголовок выводится крупным H1 над блоками. По умолчанию выключено.
+   */
+  showTitle?: boolean | null;
+  blocks?:
+    | {
+        blockName?: string | null;
+        title: string;
+        icon?:
+          | (
+              | 'none'
+              | 'iva-c-meet'
+              | 'iva-c-webinar'
+              | 'iva-c-chat'
+              | 'iva-c-mail'
+              | 'iva-c-disk'
+              | 'iva-c-ai'
+              | 'iva-c-stream'
+              | 'iva-c-calendar'
+              | 'iva-c-users'
+              | 'monitor-smartphone'
+            )
+          | null;
+        description?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        image?: (string | null) | Media;
+        bgType?: ('greenGradient' | 'greenBg' | 'grayBg' | 'noBg' | 'customBg') | null;
+        variation?: ('default' | 'fullWidth') | null;
+        imagePosition?: ('left' | 'right') | null;
+        titleSize?: ('default' | 'small' | 'medium' | 'large' | 'xlarge' | 'xxlarge') | null;
+        headerLevel?: ('h1' | 'h2' | 'h3' | 'h4') | null;
+        /**
+         * default, green, blue, red, yellow, violet…
+         */
+        titleTheme?: string | null;
+        /**
+         * Hex, если фон = «Свой цвет».
+         */
+        blockBgColor?: string | null;
+        blockTextColor?: string | null;
+        primaryButton?: {
+          text?: string | null;
+          /**
+           * Относительный URL или абсолютный https://…
+           */
+          url?: string | null;
+          isCustom?: boolean | null;
+          /**
+           * Hex, например #0F6F4D
+           */
+          bgColor?: string | null;
+          /**
+           * Hex, например #0F6F4D
+           */
+          textColor?: string | null;
+        };
+        secondaryButton?: {
+          text?: string | null;
+          /**
+           * Относительный URL или абсолютный https://…
+           */
+          url?: string | null;
+          isCustom?: boolean | null;
+          /**
+           * Hex, например #0F6F4D
+           */
+          bgColor?: string | null;
+          /**
+           * Hex, например #0F6F4D
+           */
+          textColor?: string | null;
+        };
+        id?: string | null;
+        blockType: 'legacyHero';
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header".
+ */
+export interface Header {
+  id: string;
+  logo?: (string | null) | Media;
+  siteName?: string | null;
+  /**
+   * Подписи кнопок в шапке. Пустое поле — дефолт на сайте (десктоп: «Войти» / «Регистрация», мобила: «Вход» / «Регистрация»).
+   */
+  authButtons?: {
+    loginDesktop?: string | null;
+    signupDesktop?: string | null;
+    loginMobile?: string | null;
+    signupMobile?: string | null;
+  };
+  /**
+   * Основное меню шапки. Для десктопа и мобильного меню можно задать разные названия и иконки.
+   */
+  navigation?:
+    | {
+        icon?: (string | null) | Media;
+        /**
+         * Если пусто — используется иконка для десктопа.
+         */
+        mobileIcon?: (string | null) | Media;
+        /**
+         * Если включено, иконка десктопа не показывается в шапке на больших экранах.
+         */
+        mobileMenuOnly?: boolean | null;
+        label: string;
+        mobileLabel?: string | null;
+        /**
+         * Необязательно, если добавлено подменю.
+         */
+        url?: string | null;
+        openInNewTab?: boolean | null;
+        /**
+         * Если добавлены подпункты, пункт отображается как мега-меню.
+         */
+        subItems?:
+          | {
+              /**
+               * Мега-меню на больших экранах.
+               */
+              icon?: (string | null) | Media;
+              /**
+               * Если пусто — используется иконка для десктопа.
+               */
+              mobileIcon?: (string | null) | Media;
+              label: string;
+              /**
+               * Если пусто — используется название для десктопа.
+               */
+              mobileLabel?: string | null;
+              /**
+               * Относительный (/about) или абсолютный (https://…) URL.
+               */
+              url?: string | null;
+              openInNewTab?: boolean | null;
+              description?: string | null;
+              /**
+               * Hex, например #E8F5F0
+               */
+              hoverBackground?: string | null;
+              /**
+               * Hex при наведении / активной странице
+               */
+              titleColor?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Список ссылок с подписями и иконками (tel:, mailto:, https: и т.д.).
+   */
+  phones?:
+    | {
+        number: string;
+        /**
+         * Необязательно. Например: tel:+74951234567, mailto:info@example.com или https://…
+         */
+        url?: string | null;
+        openInNewTab?: boolean | null;
+        iconType?: ('hugeicons' | 'custom' | 'none') | null;
+        /**
+         * Имя из @hugeicons/core-free-icons, например Call02Icon или CustomerSupportIcon.
+         */
+        hugeiconsName?: string | null;
+        /**
+         * Загрузите SVG или изображение. Файл уходит в MinIO.
+         */
+        customIcon?: (string | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Список ссылок с подписями и иконками (tel:, mailto:, https: и т.д.).
+   */
+  rightLinks?:
+    | {
+        number: string;
+        /**
+         * Необязательно. Например: tel:+74951234567, mailto:info@example.com или https://…
+         */
+        url?: string | null;
+        openInNewTab?: boolean | null;
+        iconType?: ('hugeicons' | 'custom' | 'none') | null;
+        /**
+         * Имя из @hugeicons/core-free-icons, например Call02Icon или CustomerSupportIcon.
+         */
+        hugeiconsName?: string | null;
+        /**
+         * Загрузите SVG или изображение. Файл уходит в MinIO.
+         */
+        customIcon?: (string | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homePage_select".
+ */
+export interface HomePageSelect<T extends boolean = true> {
+  title?: T;
+  showTitle?: T;
+  blocks?:
+    | T
+    | {
+        legacyHero?:
+          | T
+          | {
+              blockName?: T;
+              title?: T;
+              icon?: T;
+              description?: T;
+              image?: T;
+              bgType?: T;
+              variation?: T;
+              imagePosition?: T;
+              titleSize?: T;
+              headerLevel?: T;
+              titleTheme?: T;
+              blockBgColor?: T;
+              blockTextColor?: T;
+              primaryButton?:
+                | T
+                | {
+                    text?: T;
+                    url?: T;
+                    isCustom?: T;
+                    bgColor?: T;
+                    textColor?: T;
+                  };
+              secondaryButton?:
+                | T
+                | {
+                    text?: T;
+                    url?: T;
+                    isCustom?: T;
+                    bgColor?: T;
+                    textColor?: T;
+                  };
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header_select".
+ */
+export interface HeaderSelect<T extends boolean = true> {
+  logo?: T;
+  siteName?: T;
+  authButtons?:
+    | T
+    | {
+        loginDesktop?: T;
+        signupDesktop?: T;
+        loginMobile?: T;
+        signupMobile?: T;
+      };
+  navigation?:
+    | T
+    | {
+        icon?: T;
+        mobileIcon?: T;
+        mobileMenuOnly?: T;
+        label?: T;
+        mobileLabel?: T;
+        url?: T;
+        openInNewTab?: T;
+        subItems?:
+          | T
+          | {
+              icon?: T;
+              mobileIcon?: T;
+              label?: T;
+              mobileLabel?: T;
+              url?: T;
+              openInNewTab?: T;
+              description?: T;
+              hoverBackground?: T;
+              titleColor?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  phones?:
+    | T
+    | {
+        number?: T;
+        url?: T;
+        openInNewTab?: T;
+        iconType?: T;
+        hugeiconsName?: T;
+        customIcon?: T;
+        id?: T;
+      };
+  rightLinks?:
+    | T
+    | {
+        number?: T;
+        url?: T;
+        openInNewTab?: T;
+        iconType?: T;
+        hugeiconsName?: T;
+        customIcon?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

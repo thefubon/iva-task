@@ -4,11 +4,6 @@ export function generateStaticParams() {
   return [{ locale: 'ru' }, { locale: 'en' }]
 }
 
-export default async function FrontendLayout(props: {
-  children: React.ReactNode
-  params: Promise<{ locale: string }>
-}) {
-  const { children } = props
-
+export default function FrontendLayout({ children }: { children: React.ReactNode }) {
   return <AppProviders>{children}</AppProviders>
 }

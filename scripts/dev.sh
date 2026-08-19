@@ -18,7 +18,7 @@ while [[ $# -gt 0 ]]; do
 Использование: ./scripts/dev.sh [--no-docker]
 
 Локальный dev-стек:
-  1. Docker Compose: MongoDB (replica set rs0)
+  1. Docker Compose: MongoDB (replica set rs0) + MinIO
   2. CMS (:3333) + Web (:3033)
 
   --no-docker   Не поднимать docker compose (сервисы уже запущены)
@@ -42,10 +42,11 @@ if [[ -f .env ]]; then
 fi
 
 if [[ "$SKIP_DOCKER" -eq 0 ]]; then
-  echo "→ Docker Compose: MongoDB + seed из backup/mongo"
+  echo "→ Docker Compose: MongoDB + MinIO + seed из backup/"
   docker compose up -d
-  echo "→ Ждём replica set и restore…"
-  docker compose up --wait mongo mongo-restore >/dev/null
+  echo "→ Ждём replica set, MinIO и restore…"
+  docker compose up --wait mongo mongo-restore minio
+  docker compose up minio-init
 fi
 
 echo "→ CMS  http://localhost:${CMS_PORT}/admin"

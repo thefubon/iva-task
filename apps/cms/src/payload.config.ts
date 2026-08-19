@@ -5,6 +5,7 @@ loadRootEnv()
 import { parseCmsEnv } from '@iva360/shared/schemas'
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { s3Storage } from '@payloadcms/storage-s3'
 import { ru } from '@payloadcms/translations/languages/ru'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -13,6 +14,8 @@ import sharp from 'sharp'
 
 import { Media } from './collections/Media'
 import { Users } from './collections/Users'
+import { Header } from './globals/Header'
+import { HomePage } from './globals/HomePage'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -28,7 +31,16 @@ if (!isNextBuildPhase && !isPayloadCliPhase) {
 
 const cmsPublicUrl = process.env.CMS_PUBLIC_URL || 'http://localhost:3333'
 const webPublicUrl = process.env.WEB_PUBLIC_URL || 'http://localhost:3033'
-const csrfOrigins = [...new Set([cmsPublicUrl, webPublicUrl].filter(Boolean))]
+const csrfOrigins = [
+  ...new Set(
+    [cmsPublicUrl, webPublicUrl, 'http://127.0.0.1:3033', 'http://127.0.0.1:3333'].filter(Boolean),
+  ),
+]
+
+const s3Bucket = process.env.S3_BUCKET
+const useS3Storage = Boolean(
+  s3Bucket && process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY,
+)
 
 const seedAdminEmail = 'admin@iva360.ru'
 const seedAdminPassword = 'admin'
@@ -36,6 +48,7 @@ const seedAdminPassword = 'admin'
 export default buildConfig({
   serverURL: cmsPublicUrl,
   csrf: csrfOrigins,
+  cors: csrfOrigins,
   admin: {
     user: Users.slug,
     importMap: {
@@ -47,6 +60,32 @@ export default buildConfig({
     },
   },
   collections: [Users, Media],
+  globals: [HomePage, Header],
+  plugins: [
+    ...(useS3Storage
+      ? [
+          s3Storage({
+            collections: {
+              media: true,
+            },
+            bucket: s3Bucket!,
+            config: {
+              credentials: {
+                accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+                secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+              },
+              region: process.env.S3_REGION || 'us-east-1',
+              ...(process.env.S3_ENDPOINT
+                ? {
+                    endpoint: process.env.S3_ENDPOINT,
+                    forcePathStyle: true,
+                  }
+                : {}),
+            },
+          }),
+        ]
+      : []),
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

@@ -10,6 +10,7 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
     group: 'Администрирование',
   },
+  lockDocuments: false,
   auth: {
     cookies: {
       secure: process.env.NODE_ENV === 'production',
