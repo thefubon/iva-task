@@ -26,6 +26,11 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   reactCompiler: true,
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3033', 'localhost:3333', '127.0.0.1:3033', '127.0.0.1:3333'],
+    },
+  },
   async rewrites() {
     return [
       {

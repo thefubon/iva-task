@@ -1,6 +1,9 @@
 # IVA 360 Demo
 
-Чистый **pnpm-monorepo** для тестового задания React-разработчика. В репозитории два приложения и общий пакет: фронтенд на Next.js (FSD + IVA 360 UI Kit) и CMS на Payload 3. Продуктовой логики нет — только каркас, тема и компоненты.
+**pnpm-monorepo** для тестового задания React-разработчика. Два приложения и общий пакет: фронтенд на Next.js (FSD + IVA 360 UI Kit) и CMS на Payload 3.
+
+**Сайт** — пустая страница с официальным логотипом IVA 360 (не шире 320px).  
+**Админка** — глобалы «Главная» и «Шапка», загрузки в MinIO, seed из `backup/`.
 
 **Правила для ИИ / агента:** полная карта «куда что ставить» — [AGENTS.md](./AGENTS.md). Cursor подхватывает `.cursor/rules/*.mdc` автоматически.
 
@@ -101,8 +104,11 @@ pnpm dev                      # CMS :3333 и Web :3033
 | MinIO API | http://127.0.0.1:9002 |
 | MinIO console | http://127.0.0.1:9003 |
 
-**Логин CMS:** `admin@iva360.ru` / `admin`  
+**Логин CMS:** `admin@iva360.ru` / `admin` (в dev включён auto-login)  
 **MinIO console:** `minioadmin` / `minioadmin`
+
+Админку удобнее открывать через сайт: http://localhost:3033/admin (rewrite на CMS). Прямой URL: http://localhost:3333/admin.  
+В форме Payload кнопка «Сохранить» серая, пока поле не изменено — это не блокировка прав.
 
 При первом `docker compose up` / `pnpm setup`:
 
@@ -150,12 +156,18 @@ iva-task/
 │   └── web/                 # Next.js 16 фронтенд, FSD
 ├── packages/
 │   └── shared/              # env, i18n, zod-схемы, payload-types
-├── backup/mongo/            # seed MongoDB для Docker
+├── backup/
+│   ├── mongo/               # seed MongoDB (users, media, Header, HomePage)
+│   └── minio/               # seed файлов загрузок
+├── .cursor/rules/           # правила Cursor
+├── AGENTS.md
 ├── docker-compose.yml
 ├── pnpm-workspace.yaml
 └── scripts/
+    ├── setup.sh
     ├── dev.sh
-    └── backup-mongo.sh
+    ├── backup-seed.sh
+    └── seed-demo.mjs
 ```
 
 ### FSD — `apps/web/src` (как в IVA 360)
@@ -170,10 +182,10 @@ apps/web/src/
 │   ├── assets/css/
 │   │   ├── globals.css           # точка входа: Tailwind, тема, шрифты
 │   │   └── iva360-theme.css      # дизайн-токены IVA 360 (oklch)
-│   └── [locale]/(frontend)/      # ru по умолчанию, /en
-├── entities/                     # слой сущностей (пустой в demo)
+│   └── [locale]/(frontend)/      # главная: логотип IVA 360; ru по умолчанию, /en
+├── entities/cms-media/           # резолв URL медиа из Payload
 ├── features/                     # слой фич (пустой в demo)
-├── widgets/                      # слой виджетов (пустой в demo)
+├── widgets/                      # header, home-page, legacy-promo (CMS; на сайте не рендерятся)
 ├── shared/
 │   ├── api/
 │   ├── config/menu.ts
@@ -186,7 +198,7 @@ apps/web/src/
 
 ### CMS — `apps/cms`
 
-Чистый Payload: коллекции `users` и `media`, локали `ru` / `en`, Lexical-редактор, MongoDB. Типы пишутся в `packages/shared/src/payload-types.ts` (`pnpm generate:types`).
+Payload: коллекции `users` и `media`, глобалы **`homePage`** (Главная, блоки Legacy Hero) и **`header`** (Шапка), локали `ru` / `en`, Lexical, MongoDB, файлы в MinIO (`@payloadcms/storage-s3`). Типы — `packages/shared/src/payload-types.ts` (`pnpm generate:types`).
 
 ---
 
@@ -263,6 +275,7 @@ apps/web/src/
 | `payload` **3.84.1** | CMS |
 | `@payloadcms/next`, `@payloadcms/db-mongodb`, `@payloadcms/richtext-lexical` | Next + Mongo + Lexical |
 | `@payloadcms/ui`, `@payloadcms/translations` | админка, i18n (ru) |
+| `@payloadcms/storage-s3` | загрузки media в MinIO |
 | `next` 16.3.1, `react` 19.2.8 | тот же runtime, что у web |
 | `graphql` | GraphQL API Payload |
 | `sharp` | обработка изображений |
@@ -276,7 +289,7 @@ apps/web/src/
 
 ### Docker
 
-Образ **`mongo:8.0.21`**, replica set `rs0` (нужен для транзакций Payload). Сервисы: `mongo`, `mongo-init`, `mongo-restore`.
+Образы **`mongo:8.0.21`** (replica set `rs0`) и **MinIO**. Сервисы: `mongo`, `mongo-init`, `mongo-restore`, `minio`, `minio-init`.
 
 ---
 

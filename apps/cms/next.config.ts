@@ -22,6 +22,11 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   outputFileTracingRoot: path.resolve(dirname, '../..'),
   ...(cmsAdminAssetPrefix ? { assetPrefix: cmsAdminAssetPrefix } : {}),
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3033', 'localhost:3333', '127.0.0.1:3033', '127.0.0.1:3333'],
+    },
+  },
   devIndicators: false,
   poweredByHeader: false,
   reactStrictMode: true,

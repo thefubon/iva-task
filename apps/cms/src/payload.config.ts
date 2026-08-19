@@ -31,9 +31,16 @@ if (!isNextBuildPhase && !isPayloadCliPhase) {
 
 const cmsPublicUrl = process.env.CMS_PUBLIC_URL || 'http://localhost:3333'
 const webPublicUrl = process.env.WEB_PUBLIC_URL || 'http://localhost:3033'
+const payloadServerUrl = process.env.PAYLOAD_SERVER_URL || webPublicUrl
 const csrfOrigins = [
   ...new Set(
-    [cmsPublicUrl, webPublicUrl, 'http://127.0.0.1:3033', 'http://127.0.0.1:3333'].filter(Boolean),
+    [
+      cmsPublicUrl,
+      webPublicUrl,
+      payloadServerUrl,
+      'http://127.0.0.1:3033',
+      'http://127.0.0.1:3333',
+    ].filter(Boolean),
   ),
 ]
 
@@ -46,11 +53,17 @@ const seedAdminEmail = 'admin@iva360.ru'
 const seedAdminPassword = 'admin'
 
 export default buildConfig({
-  serverURL: cmsPublicUrl,
+  // Админка открывается через web (:3033/admin). Origin в браузере должен совпадать,
+  // иначе cookie/CSRF/server actions уходят на :3333 и форма остаётся read-only.
+  serverURL: payloadServerUrl,
   csrf: csrfOrigins,
   cors: csrfOrigins,
   admin: {
     user: Users.slug,
+    autoLogin: {
+      email: seedAdminEmail,
+      password: seedAdminPassword,
+    },
     importMap: {
       baseDir: path.resolve(dirname),
       importMapFile: path.resolve(dirname, './app/admin/importMap.js'),
