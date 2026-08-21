@@ -20,9 +20,11 @@ pnpm install
 
 echo "→ Docker Compose: Mongo + MinIO + restore seed"
 docker compose up -d
-echo "→ Ждём replica set, MinIO и дампы…"
-docker compose up --wait mongo mongo-restore minio
-# minio-init — one-shot; --wait на completed
+echo "→ Ждём replica set и MinIO…"
+# --wait только для долгоживущих сервисов: one-shot restore/init
+# в Compose v5 считаются ошибкой, если контейнер завершился с кодом 0.
+docker compose up --wait mongo minio
+docker compose up mongo-restore
 docker compose up minio-init
 
 echo

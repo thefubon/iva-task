@@ -44,8 +44,11 @@ fi
 if [[ "$SKIP_DOCKER" -eq 0 ]]; then
   echo "→ Docker Compose: MongoDB + MinIO + seed из backup/"
   docker compose up -d
-  echo "→ Ждём replica set, MinIO и restore…"
-  docker compose up --wait mongo mongo-restore minio
+  echo "→ Ждём replica set и MinIO…"
+  # --wait только для долгоживущих сервисов: one-shot restore/init
+  # в Compose v5 считаются ошибкой, если контейнер завершился с кодом 0.
+  docker compose up --wait mongo minio
+  docker compose up mongo-restore
   docker compose up minio-init
 fi
 
